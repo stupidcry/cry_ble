@@ -1,6 +1,5 @@
 """Config flow for oralb ble integration."""
 
-import logging
 from __future__ import annotations
 
 from typing import Any
@@ -16,8 +15,6 @@ from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_ADDRESS
 
 from .const import DOMAIN
-
-_LOGGER = logging.getLogger(__name__)
 
 
 class OralBConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -69,7 +66,7 @@ class OralBConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the user step to pick discovered device."""
-        _LOGGER.warn("=================async_step_user")
+        print("=================async_step_user")
         if user_input is not None:
             address = user_input[CONF_ADDRESS]
             await self.async_set_unique_id(address, raise_on_progress=False)
