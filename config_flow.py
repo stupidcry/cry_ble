@@ -80,7 +80,7 @@ class OralBConfigFlow(ConfigFlow, domain=DOMAIN):
 
         current_addresses = self._async_current_ids()
         for discovery_info in async_discovered_service_info(self.hass, False):
-            _LOGGER.warn(f"===================={vars(discovery_info)}")
+            _LOGGER.warn(f"===================={dir(discovery_info)}")
             _LOGGER.warn(f"===================={discovery_info.address}")
             address = discovery_info.address
             if address in current_addresses or address in self._discovered_devices:
