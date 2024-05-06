@@ -15,6 +15,9 @@ from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_ADDRESS
 
 from .const import DOMAIN
+import logging
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class OralBConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -77,8 +80,8 @@ class OralBConfigFlow(ConfigFlow, domain=DOMAIN):
 
         current_addresses = self._async_current_ids()
         for discovery_info in async_discovered_service_info(self.hass, False):
-            print(f"===================={discovery_info}")
-            print(f"===================={discovery_info.address}")
+            _LOGGER.warn(f"===================={vars(discovery_info)}")
+            _LOGGER.warn(f"===================={discovery_info.address}")
             address = discovery_info.address
             if address in current_addresses or address in self._discovered_devices:
                 continue
