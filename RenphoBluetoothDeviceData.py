@@ -13,7 +13,7 @@ import time
 from dataclasses import dataclass
 from enum import Enum, auto
 
-from bleak import BleakError, BLEDevice
+from bleak import BleakError, BLEDevice, BleakGATTCharacteristic
 from bleak_retry_connector import (
     BleakClientWithServiceCache,
     establish_connection,
@@ -70,11 +70,11 @@ class RenphoBluetoothDeviceData(BluetoothData):
         )
         battery_payload = await client.read_gatt_char(battery_char)
 
-        def callback(sender, data: bytearray):
+        def callback(sender: BleakGATTCharacteristic, data: bytearray):
             hex_string = "".join(["{:02x}".format(byte) for byte in data])
             _LOGGER.warn(f"{sender}: {hex_string}")
 
-        client.start_notify(battery_char, callback)
+        await client.start_notify(battery_char, callback)
 
     async def async_poll(self, ble_device: BLEDevice) -> SensorUpdate:
         """
