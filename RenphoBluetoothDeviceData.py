@@ -69,7 +69,13 @@ class RenphoBluetoothDeviceData(BluetoothData):
             "00001a12-0000-1000-8000-00805f9b34fb"
         )
         battery_payload = await client.read_gatt_char(battery_char)
-        _LOGGER.warn(f"Successfully read active gatt characters{battery_payload}")
+        _LOGGER.warn(f"Successfully read active gatt characters:{battery_payload}")
+        hex_string = "".join(["{:02x}".format(byte) for byte in data])
+
+        def callback(sender: BleakGATTCharacteristic, data: bytearray):
+            _LOGGER.warn(f"{sender}: {data}")
+
+        client.start_notify(battery_char, callback)
 
     async def async_poll(self, ble_device: BLEDevice) -> SensorUpdate:
         """
