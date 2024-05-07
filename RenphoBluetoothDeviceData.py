@@ -73,7 +73,8 @@ class RenphoBluetoothDeviceData(BluetoothData):
         hex_string = "".join(["{:02x}".format(byte) for byte in data])
 
         def callback(sender: BleakGATTCharacteristic, data: bytearray):
-            _LOGGER.warn(f"{sender}: {data}")
+            hex_string = "".join(["{:02x}".format(byte) for byte in data])
+            _LOGGER.warn(f"{sender}: {hex_string}")
 
         client.start_notify(battery_char, callback)
 
