@@ -38,7 +38,9 @@ class RenphoBluetoothDeviceData(BluetoothData):
 
     def _start_update(self, service_info: BluetoothServiceInfo) -> None:
         """Update from BLE advertisement data."""
-        _LOGGER.warn("Parsing OralB BLE advertisement data: %s", service_info)
+        _LOGGER.warn(
+            "======_start_update Parsing OralB BLE advertisement data: %s", service_info
+        )
 
     def poll_needed(
         self, service_info: BluetoothServiceInfo, last_poll: float | None
