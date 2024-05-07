@@ -48,9 +48,10 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
         current_addresses = self._async_current_ids()
         for discovery_info in async_discovered_service_info(self.hass, False):
             address = discovery_info.address
+            _LOGGER.info(f"=== address:{address}")
             if address in current_addresses or address in self._discovered_devices:
                 continue
-            if "T001" in discovery_info.advertisement.local_name:
+            if "T001" in discovery_info.name:
                 self._discovered_devices[address] = discovery_info.name
                 _LOGGER.debug("Found My Device")
                 _LOGGER.debug("=== Discovery address: %s", address)
