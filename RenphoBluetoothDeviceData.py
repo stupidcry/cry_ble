@@ -59,6 +59,9 @@ class RenphoBluetoothDeviceData(BluetoothData):
         ######## debug
         # 00001800-0000-1000-8000-00805f9b34fb
         for service in client.services:
+            characteristics = service.characteristics
+            for characteristic in characteristics:
+                _LOGGER.warn(f"=========== {characteristic}")
             discovery_info_attributes = dir(service)
             for attr_name in discovery_info_attributes:
                 attr_value = getattr(service, attr_name)
