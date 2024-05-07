@@ -20,7 +20,7 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 
 
-class OralBConfigFlow(ConfigFlow, domain=DOMAIN):
+class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for oralb."""
 
     VERSION = 1
@@ -95,6 +95,7 @@ class OralBConfigFlow(ConfigFlow, domain=DOMAIN):
                     _LOGGER.warn(f"{attr_name}: {attr_value}")
                 ######## debug
                 self._discovered_devices[address] = discovery_info.name
+        self._discovered_devices["12345address"] = "test name"
         if not self._discovered_devices:
             return self.async_abort(reason="no_devices_found")
 
