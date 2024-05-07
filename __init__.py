@@ -39,7 +39,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # and we actually have a way to connect to the device
         _LOGGER.warn(f"need pool: {hass.state} {data.poll_needed(service_info, last_poll)} {async_ble_device_from_address(
                     hass, service_info.device.address, connectable=True
-                )}")
+                )}  {(
+            hass.state is CoreState.running
+            and data.poll_needed(service_info, last_poll)
+            and bool(
+                async_ble_device_from_address(
+                    hass, service_info.device.address, connectable=True
+                )
+            )
+        )}")
         return (
             hass.state is CoreState.running
             and data.poll_needed(service_info, last_poll)
