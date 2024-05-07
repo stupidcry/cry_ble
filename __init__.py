@@ -49,16 +49,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         """Get data from RD200 BLE."""
         start = time.time()
         ble_device = bluetooth.async_ble_device_from_address(hass, address)
-        _LOGGER.info(f"get device:{time.time()-start}")  # noqa: G004
-        start = time.time()
         renpho = RenphoBluetoothDeviceData(_LOGGER)
-
         try:
             data = await renpho.update_device(ble_device)
-            _LOGGER.info(f"get data:{time.time()-start}")  # noqa: G004
         except Exception as err:
             raise UpdateFailed(f"Unable to fetch data: {err}") from err
-
+        _LOGGER.info(f"=== _async_update_method time:{time.time()-start}")  # noqa: G004
         return data
 
     coordinator = DataUpdateCoordinator(

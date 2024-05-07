@@ -99,16 +99,13 @@ class RenphoBluetoothDeviceData(BluetoothData):
         """Connects to the device through BLE and retrieves relevant data"""
         start = time.time()
         client = await establish_connection(BleakClient, ble_device, ble_device.address)
-        _LOGGER.info(f"establish_connection{time.time()-start}")  # noqa: G004
+        _LOGGER.info(f"=== establish_connection{time.time()-start}")  # noqa: G004
         device = RenphoDevice()
         device.name = ble_device.name
         device.address = ble_device.address
 
-        # get data
-        start = time.time()
         device = await self._get_renpho_data(client, device)
-        _LOGGER.info(f"_get_renpho_data{time.time()-start}")  # noqa: G004
-
         await client.disconnect()
+        _LOGGER.info(f"=== update_device disconnect: {time.time()-start}")  # noqa: G004
 
         return device
