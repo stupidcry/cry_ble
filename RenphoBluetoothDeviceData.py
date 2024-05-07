@@ -30,6 +30,7 @@ from bleak import BleakClient, BleakError
 import asyncio
 from logging import Logger
 from typing import Any, Callable, Tuple, TypeVar, cast
+import random
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -89,7 +90,7 @@ class RenphoBluetoothDeviceData(BluetoothData):
 
         await client.stop_notify("00001a12-0000-1000-8000-00805f9b34fb")
         self.logger.info(f"=== _get_renpho_data: {self._command_data}")
-        device.sensors["weight"] = self._command_data
+        device.sensors["weight"] = random.randint(1, 100)
         self._command_data = None
         return device
 
