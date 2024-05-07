@@ -58,10 +58,11 @@ class RenphoBluetoothDeviceData(BluetoothData):
         _LOGGER.warn(f"_get_payload {client.services}")
         ######## debug
         # 00001800-0000-1000-8000-00805f9b34fb
-        discovery_info_attributes = dir(client.services)
-        for attr_name in discovery_info_attributes:
-            attr_value = getattr(client.services, attr_name)
-            _LOGGER.warn(f"{attr_name}: {attr_value}")
+        for service in client.services:
+            discovery_info_attributes = dir(service)
+            for attr_name in discovery_info_attributes:
+                attr_value = getattr(service, attr_name)
+                _LOGGER.warn(f"{attr_name}: {attr_value}")
         ######## debug
         battery_char = client.services.get_characteristic("1A12")
         _LOGGER.warn(f"Successfully read active gatt characters{battery_char}")
