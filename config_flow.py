@@ -69,8 +69,10 @@ class OralBConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the user step to pick discovered device."""
-        print("=================async_step_user")
+        _LOGGER.warn("=================async_step_user")
         if user_input is not None:
+            _LOGGER.warn(f"user input:{user_input}")
+            self._abort_if_unique_id_configured()
             address = user_input[CONF_ADDRESS]
             await self.async_set_unique_id(address, raise_on_progress=False)
             self._abort_if_unique_id_configured()
@@ -80,19 +82,19 @@ class OralBConfigFlow(ConfigFlow, domain=DOMAIN):
 
         current_addresses = self._async_current_ids()
         for discovery_info in async_discovered_service_info(self.hass, False):
-            _LOGGER.warn(f"===================={discovery_info.address}")
-            discovery_info_attributes = dir(discovery_info)
-            for attr_name in discovery_info_attributes:
-                attr_value = getattr(discovery_info, attr_name)
-                _LOGGER.warn(f"{attr_name}: {attr_value}")
             address = discovery_info.address
             if address in current_addresses or address in self._discovered_devices:
                 continue
             device = DeviceData()
             # if device.supported(discovery_info):
             if "PG-" in discovery_info.name:
+                ######## debug
+                discovery_info_attributes = dir(discovery_info)
+                for attr_name in discovery_info_attributes:
+                    attr_value = getattr(discovery_info, attr_name)
+                    _LOGGER.warn(f"{attr_name}: {attr_value}")
+                ######## debug
                 self._discovered_devices[address] = discovery_info.name
-
         if not self._discovered_devices:
             return self.async_abort(reason="no_devices_found")
 
