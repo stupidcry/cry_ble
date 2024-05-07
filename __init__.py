@@ -26,6 +26,7 @@ from bleak_retry_connector import close_stale_connections_by_address
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from datetime import timedelta
+import time
 
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
@@ -46,11 +47,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     async def _async_update_method() -> RenphoBluetoothDeviceData:
         """Get data from RD200 BLE."""
+        start = time.time()
         ble_device = bluetooth.async_ble_device_from_address(hass, address)
+        _LOGGER.info(f"get device:{time.time()-start}")  # noqa: G004
+        start = time.time()
         renpho = RenphoBluetoothDeviceData(_LOGGER)
 
         try:
             data = await renpho.update_device(ble_device)
+            _LOGGER.info(f"get data:{time.time()-start}")  # noqa: G004
         except Exception as err:
             raise UpdateFailed(f"Unable to fetch data: {err}") from err
 
