@@ -37,6 +37,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     ) -> bool:
         # Only poll if hass is running, we need to poll,
         # and we actually have a way to connect to the device
+        _LOGGER.warn(f"need pool: {hass.state} {data.poll_needed(service_info, last_poll)} {async_ble_device_from_address(
+                    hass, service_info.device.address, connectable=True
+                )}")
         return (
             hass.state is CoreState.running
             and data.poll_needed(service_info, last_poll)
@@ -81,7 +84,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             connectable=False,
         )
     )
-    _LOGGER.warn("==========before async_forward_entry_setups")
+    _LOGGER.warn("==========before forward")
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(
         coordinator.async_start()
