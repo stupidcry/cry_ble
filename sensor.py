@@ -71,7 +71,7 @@ async def async_setup_entry(
             )
             continue
         entities.append(
-            RenphoDevice(coordinator, coordinator.data, sensors_mapping[sensor_type])
+            WeightSensor(coordinator, coordinator.data, sensors_mapping[sensor_type])
         )
 
     async_add_entities(entities)
