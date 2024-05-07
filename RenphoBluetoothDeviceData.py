@@ -61,11 +61,9 @@ class RenphoBluetoothDeviceData(BluetoothData):
         for service in client.services:
             characteristics = service.characteristics
             for characteristic in characteristics:
-                _LOGGER.warn(f"=========== {characteristic}")
-            discovery_info_attributes = dir(service)
-            for attr_name in discovery_info_attributes:
-                attr_value = getattr(service, attr_name)
-                _LOGGER.warn(f"{attr_name}: {attr_value}")
+                _LOGGER.warn(
+                    f"===========service: {service} characteristic:{characteristic}"
+                )
         ######## debug
         battery_char = client.services.get_characteristic("1A12")
         _LOGGER.warn(f"Successfully read active gatt characters{battery_char}")
