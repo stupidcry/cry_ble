@@ -72,9 +72,9 @@ class OralBConfigFlow(ConfigFlow, domain=DOMAIN):
         _LOGGER.warn("=================async_step_user")
         if user_input is not None:
             _LOGGER.warn(f"user input:{user_input}")
-            self._abort_if_unique_id_configured()
             address = user_input[CONF_ADDRESS]
             await self.async_set_unique_id(address, raise_on_progress=False)
+            _LOGGER.warn(f"current ids:{self._async_current_ids()}")
             self._abort_if_unique_id_configured()
             return self.async_create_entry(
                 title=self._discovered_devices[address], data={}
