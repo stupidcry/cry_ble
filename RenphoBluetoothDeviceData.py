@@ -25,70 +25,85 @@ from home_assistant_bluetooth import BluetoothServiceInfo
 from sensor_state_data import SensorDeviceClass, SensorUpdate, Units
 from sensor_state_data.enum import StrEnum
 
+import dataclasses
+from bleak import BleakClient, BleakError
+import asyncio
+from logging import Logger
+from typing import Any, Callable, Tuple, TypeVar, cast
 
 _LOGGER = logging.getLogger(__name__)
 
 
+@dataclasses.dataclass
+class RenphoDevice:
+    """Response data with information about the RenphoDevice"""
+
+    hw_version: str = ""
+    sw_version: str = ""
+    name: str = ""
+    identifier: str = ""
+    address: str = ""
+    sensors: dict[str, str | float | None] = dataclasses.field(
+        default_factory=lambda: {}
+    )
+
+
 class RenphoBluetoothDeviceData(BluetoothData):
-    """Data for OralB BLE sensors."""
+    """Data for RD200 BLE sensors."""
 
-    def __init__(self) -> None:
-        _LOGGER.warn("=======RenphoBluetoothDeviceData init")
+    _event: asyncio.Event | None
+    _command_data: bytearray | None
+
+    def __init__(self, logger: Logger):
         super().__init__()
+        self.logger = logger
+        self._command_data = None
+        self._event = None
 
-    def _start_update(self, service_info: BluetoothServiceInfo) -> None:
-        """Update from BLE advertisement data."""
-        _LOGGER.warn(
-            "======_start_update Parsing OralB BLE advertisement data: %s", service_info
-        )
+    def notification_handler(self, _: Any, data: bytearray) -> None:
+        """Helper for command events"""
+        self._command_data = data
 
-    def poll_needed(
-        self, service_info: BluetoothServiceInfo, last_poll: float | None
-    ) -> bool:
-        """
-        This is called every time we get a service_info for a device. It means the
-        device is working and online.
-        """
-        _LOGGER.warn("=======poll_needed")
-        return True
+        if self._event is None:
+            return
+        self._event.set()
 
-    @retry_bluetooth_connection_error()
-    async def _get_payload(self, client: BleakClientWithServiceCache) -> None:
-        """Get the payload from the brush using its gatt_characteristics."""
-        _LOGGER.warn(f"_get_payload {client.services}")
-        ######## debug
-        # 00001800-0000-1000-8000-00805f9b34fb
-        for service in client.services:
-            characteristics = service.characteristics
-            for characteristic in characteristics:
-                _LOGGER.warn(
-                    f"===========service: {service} characteristic:{characteristic}"
-                )
-        ######## debug
-        battery_char = client.services.get_characteristic(
-            "00001a12-0000-1000-8000-00805f9b34fb"
-        )
-        battery_payload = await client.read_gatt_char(battery_char)
-
-        def callback(sender: BleakGATTCharacteristic, data: bytearray):
-            hex_string = "".join(["{:02x}".format(byte) for byte in data])
-            _LOGGER.warn(f"{sender}: {hex_string}")
-
-        await client.start_notify(battery_char, callback)
-
-    async def async_poll(self, ble_device: BLEDevice) -> SensorUpdate:
-        """
-        Poll the device to retrieve any values we can't get from passive listening.
-        """
-        _LOGGER.warn("Polling Renpho device: %s", ble_device.address)
-        client = await establish_connection(
-            BleakClientWithServiceCache, ble_device, ble_device.address
-        )
+    async def _get_renpho_data(
+        self, client: BleakClient, device: RenphoDevice
+    ) -> RenphoDevice:
+        self._event = asyncio.Event()
+        self.logger.info("=== _get_renpho_data")
         try:
-            await self._get_payload(client)
-        except BleakError as err:
-            _LOGGER.warning(f"Reading gatt characters failed with err: {err}")
-        finally:
-            await client.disconnect()
-            _LOGGER.debug("Disconnected from active bluetooth client")
-        return self._finish_update()
+            await client.start_notify(
+                "00001a12-0000-1000-8000-00805f9b34fb", self.notification_handler
+            )
+        except:
+            self.logger.warn("_get_radon_uptime Bleak error 1")
+
+        try:
+            await asyncio.wait_for(self._event.wait(), 5)
+        except asyncio.TimeoutError:
+            self.logger.warn("Timeout getting command data.")
+        except:
+            self.logger.warn("_get_radon_uptime Bleak error 2")
+
+        await client.stop_notify("00001a12-0000-1000-8000-00805f9b34fb")
+        self.logger.info(f"=== _get_renpho_data: {self._command_data}")
+        device.sensors["weight"] = self._command_data
+        self._command_data = None
+        return device
+
+    async def update_device(self, ble_device: BLEDevice) -> RenphoDevice:
+        """Connects to the device through BLE and retrieves relevant data"""
+
+        client = await establish_connection(BleakClient, ble_device, ble_device.address)
+        device = RenphoDevice()
+        device.name = ble_device.name
+        device.address = ble_device.address
+
+        # get data
+        device = await self._get_renpho_data(client, device)
+
+        await client.disconnect()
+
+        return device

@@ -1,16 +1,13 @@
-"""Support for OralB sensors."""
+"""Support for rd200 ble sensors."""
 
 from __future__ import annotations
 
-from oralb_ble import OralBSensor, SensorUpdate
+import logging
+import dataclasses
+
+from .RenphoBluetoothDeviceData import RenphoDevice
 
 from homeassistant import config_entries
-from homeassistant.components.bluetooth.passive_update_processor import (
-    PassiveBluetoothDataProcessor,
-    PassiveBluetoothDataUpdate,
-    PassiveBluetoothProcessorCoordinator,
-    PassiveBluetoothProcessorEntity,
-)
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -18,73 +15,37 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
+    CONCENTRATION_PARTS_PER_BILLION,
+    CONCENTRATION_PARTS_PER_MILLION,
+    LIGHT_LUX,
     PERCENTAGE,
-    SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
-    EntityCategory,
+    UnitOfPressure,
+    UnitOfTemperature,
     UnitOfTime,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH
+from homeassistant.helpers.entity import DeviceInfo, EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.sensor import sensor_device_info_to_hass_device_info
+from homeassistant.helpers.typing import StateType
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
+    DataUpdateCoordinator,
+)
+from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from .const import DOMAIN
 
-SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
-    OralBSensor.TIME: SensorEntityDescription(
-        key=OralBSensor.TIME,
-        device_class=SensorDeviceClass.DURATION,
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement=UnitOfTime.SECONDS,
-    ),
-    OralBSensor.SECTOR: SensorEntityDescription(
-        key=OralBSensor.SECTOR,
-        translation_key="sector",
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    OralBSensor.NUMBER_OF_SECTORS: SensorEntityDescription(
-        key=OralBSensor.NUMBER_OF_SECTORS,
-        translation_key="number_of_sectors",
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    OralBSensor.SECTOR_TIMER: SensorEntityDescription(
-        key=OralBSensor.SECTOR_TIMER,
-        translation_key="sector_timer",
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    OralBSensor.TOOTHBRUSH_STATE: SensorEntityDescription(
-        key=OralBSensor.TOOTHBRUSH_STATE,
-        name=None,
-    ),
-    OralBSensor.PRESSURE: SensorEntityDescription(
-        key=OralBSensor.PRESSURE,
-        translation_key="pressure",
-    ),
-    OralBSensor.MODE: SensorEntityDescription(
-        key=OralBSensor.MODE,
-        translation_key="mode",
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    OralBSensor.SIGNAL_STRENGTH: SensorEntityDescription(
-        key=OralBSensor.SIGNAL_STRENGTH,
-        device_class=SensorDeviceClass.SIGNAL_STRENGTH,
-        native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
-        state_class=SensorStateClass.MEASUREMENT,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    OralBSensor.BATTERY_PERCENT: SensorEntityDescription(
-        key=OralBSensor.BATTERY_PERCENT,
-        device_class=SensorDeviceClass.BATTERY,
-        native_unit_of_measurement=PERCENTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-}
-
-import logging
-
 _LOGGER = logging.getLogger(__name__)
+
+SENSORS_MAPPING_TEMPLATE: dict[str, SensorEntityDescription] = {
+    "weight": SensorEntityDescription(
+        key="weight",
+        device_class=SensorDeviceClass.WEIGHT,
+        native_unit_of_measurement="g",
+        name="Weight",
+    )
+}
 
 
 async def async_setup_entry(
@@ -92,37 +53,74 @@ async def async_setup_entry(
     entry: config_entries.ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the OralB BLE sensors."""
-    coordinator: PassiveBluetoothProcessorCoordinator = hass.data[DOMAIN][
-        entry.entry_id
-    ]
-    _LOGGER.warn("============sensor async_setup_entry")
+    """Set up the Renpho BLE sensors."""
+
+    coordinator: DataUpdateCoordinator[RenphoDevice] = hass.data[DOMAIN][entry.entry_id]
+
+    # we need to change some units
+    sensors_mapping = SENSORS_MAPPING_TEMPLATE.copy()
+
+    entities = []
+    _LOGGER.info("=== got sensors: %s", coordinator.data.sensors)
+    for sensor_type, sensor_value in coordinator.data.sensors.items():
+        if sensor_type not in sensors_mapping:
+            _LOGGER.debug(
+                "Unknown sensor type detected: %s, %s",
+                sensor_type,
+                sensor_value,
+            )
+            continue
+        entities.append(
+            RenphoDevice(coordinator, coordinator.data, sensors_mapping[sensor_type])
+        )
+
+    async_add_entities(entities)
 
 
-class OralBBluetoothSensorEntity(
-    PassiveBluetoothProcessorEntity[PassiveBluetoothDataProcessor[str | int | None]],
-    SensorEntity,
+class WeightSensor(
+    CoordinatorEntity[DataUpdateCoordinator[RenphoDevice]], SensorEntity
 ):
-    """Representation of a OralB sensor."""
+    """RD200 BLE sensors for the device."""
+
+    ## Setting the Device State to None fixes Uptime String, Appears to override line: https://github.com/Makr91/rd200v2/blob/3d87d6e005f5efb7c143ff32256153c517ccade9/custom_components/rd200_ble/sensor.py#L78
+    # Had to comment this line out to avoid it setting all state_class to none
+    # _attr_state_class = None
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        coordinator: DataUpdateCoordinator,
+        rd200_device: RenphoDevice,
+        entity_description: SensorEntityDescription,
+    ) -> None:
+        """Populate the rd200 entity with relevant data."""
+        super().__init__(coordinator)
+        self.entity_description = entity_description
+
+        name = f"{rd200_device.name} {rd200_device.identifier}"
+        _LOGGER.info(f"=== name:{name}")
+
+        self._attr_unique_id = f"{name}_{entity_description.key}"
+
+        self._id = rd200_device.address
+        self._attr_device_info = DeviceInfo(
+            connections={
+                (
+                    CONNECTION_BLUETOOTH,
+                    rd200_device.address,
+                )
+            },
+            name=name,
+            manufacturer="CRY Co., LTD.",
+            model="PG-XXX",
+            hw_version=rd200_device.hw_version,
+            sw_version=rd200_device.sw_version,
+        )
 
     @property
-    def native_value(self) -> str | int | None:
-        """Return the native value."""
-        return self.processor.entity_data.get(self.entity_key)
-
-    @property
-    def available(self) -> bool:
-        """Return True if entity is available.
-
-        The sensor is only created when the device is seen.
-
-        Since these are sleepy devices which stop broadcasting
-        when not in use, we can't rely on the last update time
-        so once we have seen the device we always return True.
-        """
-        return True
-
-    @property
-    def assumed_state(self) -> bool:
-        """Return True if the device is no longer broadcasting."""
-        return not self.processor.available
+    def native_value(self) -> StateType:
+        """Return the value reported by the sensor."""
+        try:
+            return self.coordinator.data.sensors[self.entity_description.key]
+        except KeyError:
+            return None

@@ -31,50 +31,15 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
         self._discovered_device: DeviceData | None = None
         self._discovered_devices: dict[str, str] = {}
 
-    async def async_step_bluetooth(
-        self, discovery_info: BluetoothServiceInfoBleak
-    ) -> ConfigFlowResult:
-        """Handle the bluetooth discovery step."""
-        print("=================async_step_bluetooth")
-        await self.async_set_unique_id(discovery_info.address)
-        self._abort_if_unique_id_configured()
-        device = DeviceData()
-        if not device.supported(discovery_info):
-            return self.async_abort(reason="not_supported")
-        self._discovery_info = discovery_info
-        self._discovered_device = device
-        return await self.async_step_bluetooth_confirm()
-
-    async def async_step_bluetooth_confirm(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Confirm discovery."""
-        print("=================async_step_bluetooth_confirm")
-        assert self._discovered_device is not None
-        device = self._discovered_device
-        assert self._discovery_info is not None
-        discovery_info = self._discovery_info
-        title = device.title or device.get_device_name() or discovery_info.name
-        if user_input is not None:
-            return self.async_create_entry(title=title, data={})
-
-        self._set_confirm_only()
-        placeholders = {"name": title}
-        self.context["title_placeholders"] = placeholders
-        return self.async_show_form(
-            step_id="bluetooth_confirm", description_placeholders=placeholders
-        )
-
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the user step to pick discovered device."""
-        _LOGGER.warn("=================async_step_user")
+        _LOGGER.info("=== async_step_user")
         if user_input is not None:
-            _LOGGER.warn(f"user input:{user_input}")
+            _LOGGER.info(f"=== user input:{user_input}")  # noqa: G004
             address = user_input[CONF_ADDRESS]
             await self.async_set_unique_id(address, raise_on_progress=False)
-            _LOGGER.warn(f"current ids:{self._async_current_ids()}")
             self._abort_if_unique_id_configured()
             return self.async_create_entry(
                 title=self._discovered_devices[address], data={}
@@ -85,17 +50,19 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
             address = discovery_info.address
             if address in current_addresses or address in self._discovered_devices:
                 continue
-            device = DeviceData()
-            # if device.supported(discovery_info):
-            if "PG-" in discovery_info.name:
-                ######## debug
-                discovery_info_attributes = dir(discovery_info)
-                for attr_name in discovery_info_attributes:
-                    attr_value = getattr(discovery_info, attr_name)
-                    _LOGGER.warn(f"{attr_name}: {attr_value}")
-                ######## debug
+            if "T001" in discovery_info.advertisement.local_name:
                 self._discovered_devices[address] = discovery_info.name
-        self._discovered_devices["12345address"] = "test name"
+                _LOGGER.debug("Found My Device")
+                _LOGGER.debug("=== Discovery address: %s", address)
+                _LOGGER.debug("=== Man Data: %s", discovery_info.manufacturer_data)
+                _LOGGER.debug("=== advertisement: %s", discovery_info.advertisement)
+                _LOGGER.debug("=== device: %s", discovery_info.device)
+                _LOGGER.debug("=== service data: %s", discovery_info.service_data)
+                _LOGGER.debug("=== service uuids: %s", discovery_info.service_uuids)
+                _LOGGER.debug("=== rssi: %s", discovery_info.rssi)
+                _LOGGER.debug(
+                    "=== advertisement: %s", discovery_info.advertisement.local_name
+                )
         if not self._discovered_devices:
             return self.async_abort(reason="no_devices_found")
 
