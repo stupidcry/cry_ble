@@ -65,7 +65,9 @@ class RenphoBluetoothDeviceData(BluetoothData):
                     f"===========service: {service} characteristic:{characteristic}"
                 )
         ######## debug
-        battery_char = client.services.get_characteristic("1A12")
+        battery_char = client.services.get_characteristic(
+            "00001a12-0000-1000-8000-00805f9b34fb"
+        )
         _LOGGER.warn(f"Successfully read active gatt characters{battery_char}")
 
     async def async_poll(self, ble_device: BLEDevice) -> SensorUpdate:
