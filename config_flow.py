@@ -90,10 +90,8 @@ class OralBConfigFlow(ConfigFlow, domain=DOMAIN):
                 continue
             device = DeviceData()
             # if device.supported(discovery_info):
-            if True:
-                self._discovered_devices[address] = (
-                    device.title or device.get_device_name() or discovery_info.name
-                )
+            if "PG-" in discovery_info.name:
+                self._discovered_devices[address] = discovery_info.name
 
         if not self._discovered_devices:
             return self.async_abort(reason="no_devices_found")

@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "bluetooth": [
     {
-      "manufacturer_id": 220
+      "manufacturer_id": 6672
     }
   ],
   "codeowners": ["cry"],
