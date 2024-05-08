@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
-from oralb_ble import OralBBluetoothDeviceData as DeviceData
 import voluptuous as vol
 
 from homeassistant.components.bluetooth import (
@@ -15,7 +15,6 @@ from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_ADDRESS
 
 from .const import DOMAIN
-import logging
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,17 +26,15 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
 
     def __init__(self) -> None:
         """Initialize the config flow."""
-        self._discovery_info: BluetoothServiceInfoBleak | None = None
-        self._discovered_device: DeviceData | None = None
         self._discovered_devices: dict[str, str] = {}
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the user step to pick discovered device."""
-        _LOGGER.warn("=== async_step_user")
+        _LOGGER.warning("=== async_step_user")
         if user_input is not None:
-            _LOGGER.warn(f"=== user input:{user_input}")  # noqa: G004
+            _LOGGER.warning("=== user input:%s", user_input)
             address = user_input[CONF_ADDRESS]
             await self.async_set_unique_id(address, raise_on_progress=False)
             self._abort_if_unique_id_configured()
@@ -48,7 +45,7 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
         current_addresses = self._async_current_ids()
         for discovery_info in async_discovered_service_info(self.hass, False):
             address = discovery_info.address
-            _LOGGER.warn(f"=== address:{address}")
+            _LOGGER.w("=== address:%s", address)
             if address in current_addresses or address in self._discovered_devices:
                 continue
             if "T001" in discovery_info.name:

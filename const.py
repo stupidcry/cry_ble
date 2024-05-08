@@ -1,1 +1,3 @@
-DOMAIN = "cry_ble"
+"""Constants for the OralB integration."""
+
+DOMAIN = "renpho_domain"

@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
-import logging
 import dataclasses
+import logging
 
-from .RenphoBluetoothDeviceData import RenphoDevice
+from sensor_state_data import SensorDeviceClass, SensorUpdate, Units
 
 from homeassistant import config_entries
+from homeassistant.components.bluetooth.passive_update_processor import (
+    PassiveBluetoothDataProcessor,
+    PassiveBluetoothDataUpdate,
+    PassiveBluetoothProcessorCoordinator,
+    PassiveBluetoothProcessorEntity,
+)
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -27,6 +33,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH
 from homeassistant.helpers.entity import DeviceInfo, EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.sensor import sensor_device_info_to_hass_device_info
 from homeassistant.helpers.typing import StateType
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -35,6 +42,7 @@ from homeassistant.helpers.update_coordinator import (
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from .const import DOMAIN
+from .RenphoBluetoothDeviceData import RenphoDevice
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,79 +56,63 @@ SENSORS_MAPPING_TEMPLATE: dict[str, SensorEntityDescription] = {
 }
 
 
+def sensor_update_to_bluetooth_data_update(parsed_data):
+    """Convert a sensor update to a Bluetooth data update."""
+    # This function must convert the parsed_data
+    # from your library's update_method to a `PassiveBluetoothDataUpdate`
+    # See the structure above
+    _LOGGER.w("===*** sensor_update_to_bluetooth_data_update")
+    return PassiveBluetoothDataUpdate(
+        devices={},
+        entity_descriptions={},
+        entity_data={},
+        entity_names={},
+    )
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: config_entries.ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Renpho BLE sensors."""
+    coordinator: PassiveBluetoothProcessorCoordinator = hass.data[DOMAIN][
+        entry.entry_id
+    ]
+    processor = PassiveBluetoothDataProcessor(sensor_update_to_bluetooth_data_update)
 
-    coordinator: DataUpdateCoordinator[RenphoDevice] = hass.data[DOMAIN][entry.entry_id]
-
-    # we need to change some units
-    sensors_mapping = SENSORS_MAPPING_TEMPLATE.copy()
-
-    entities = []
-    _LOGGER.warn("=== got sensors: %s", coordinator.data.sensors)
-    for sensor_type, sensor_value in coordinator.data.sensors.items():
-        if sensor_type not in sensors_mapping:
-            _LOGGER.debug(
-                "Unknown sensor type detected: %s, %s",
-                sensor_type,
-                sensor_value,
-            )
-            continue
-        entities.append(
-            WeightSensor(coordinator, coordinator.data, sensors_mapping[sensor_type])
+    entry.async_on_unload(
+        processor.async_add_entities_listener(
+            RenphoBluetoothSensorEntity, async_add_entities
         )
+    )
+    entry.async_on_unload(
+        coordinator.async_register_processor(processor, SensorEntityDescription)
+    )
 
-    async_add_entities(entities)
 
-
-class WeightSensor(
-    CoordinatorEntity[DataUpdateCoordinator[RenphoDevice]], SensorEntity
+class RenphoBluetoothSensorEntity(
+    PassiveBluetoothProcessorEntity[PassiveBluetoothDataProcessor[str | int | None]],
+    SensorEntity,
 ):
-    """RD200 BLE sensors for the device."""
-
-    ## Setting the Device State to None fixes Uptime String, Appears to override line: https://github.com/Makr91/rd200v2/blob/3d87d6e005f5efb7c143ff32256153c517ccade9/custom_components/rd200_ble/sensor.py#L78
-    # Had to comment this line out to avoid it setting all state_class to none
-    # _attr_state_class = None
-    _attr_has_entity_name = True
-
-    def __init__(
-        self,
-        coordinator: DataUpdateCoordinator,
-        rd200_device: RenphoDevice,
-        entity_description: SensorEntityDescription,
-    ) -> None:
-        """Populate the rd200 entity with relevant data."""
-        super().__init__(coordinator)
-        self.entity_description = entity_description
-
-        name = f"{rd200_device.name} {rd200_device.identifier}"
-        _LOGGER.warn(f"=== name:{name}")
-
-        self._attr_unique_id = f"{name}_{entity_description.key}"
-
-        self._id = rd200_device.address
-        self._attr_device_info = DeviceInfo(
-            connections={
-                (
-                    CONNECTION_BLUETOOTH,
-                    rd200_device.address,
-                )
-            },
-            name=name,
-            manufacturer="CRY Co., LTD.",
-            model="PG-XXX",
-            hw_version=rd200_device.hw_version,
-            sw_version=rd200_device.sw_version,
-        )
+    @property
+    def native_value(self) -> str | int | None:
+        """Return the native value."""
+        return self.processor.entity_data.get(self.entity_key)
 
     @property
-    def native_value(self) -> StateType:
-        """Return the value reported by the sensor."""
-        try:
-            return self.coordinator.data.sensors[self.entity_description.key]
-        except KeyError:
-            return None
+    def available(self) -> bool:
+        """Return True if entity is available.
+
+        The sensor is only created when the device is seen.
+
+        Since these are sleepy devices which stop broadcasting
+        when not in use, we can't rely on the last update time
+        so once we have seen the device we always return True.
+        """
+        return True
+
+    @property
+    def assumed_state(self) -> bool:
+        """Return True if the device is no longer broadcasting."""
+        return not self.processor.available
