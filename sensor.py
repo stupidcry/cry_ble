@@ -61,7 +61,7 @@ async def async_setup_entry(
     sensors_mapping = SENSORS_MAPPING_TEMPLATE.copy()
 
     entities = []
-    _LOGGER.info("=== got sensors: %s", coordinator.data.sensors)
+    _LOGGER.warn("=== got sensors: %s", coordinator.data.sensors)
     for sensor_type, sensor_value in coordinator.data.sensors.items():
         if sensor_type not in sensors_mapping:
             _LOGGER.debug(
@@ -98,7 +98,7 @@ class WeightSensor(
         self.entity_description = entity_description
 
         name = f"{rd200_device.name} {rd200_device.identifier}"
-        _LOGGER.info(f"=== name:{name}")
+        _LOGGER.warn(f"=== name:{name}")
 
         self._attr_unique_id = f"{name}_{entity_description.key}"
 

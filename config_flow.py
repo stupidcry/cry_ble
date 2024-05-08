@@ -35,9 +35,9 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the user step to pick discovered device."""
-        _LOGGER.info("=== async_step_user")
+        _LOGGER.warn("=== async_step_user")
         if user_input is not None:
-            _LOGGER.info(f"=== user input:{user_input}")  # noqa: G004
+            _LOGGER.warn(f"=== user input:{user_input}")  # noqa: G004
             address = user_input[CONF_ADDRESS]
             await self.async_set_unique_id(address, raise_on_progress=False)
             self._abort_if_unique_id_configured()
@@ -48,7 +48,7 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
         current_addresses = self._async_current_ids()
         for discovery_info in async_discovered_service_info(self.hass, False):
             address = discovery_info.address
-            _LOGGER.info(f"=== address:{address}")
+            _LOGGER.warn(f"=== address:{address}")
             if address in current_addresses or address in self._discovered_devices:
                 continue
             if "T001" in discovery_info.name:

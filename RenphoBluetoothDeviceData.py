@@ -99,13 +99,34 @@ class RenphoBluetoothDeviceData(BluetoothData):
         """Connects to the device through BLE and retrieves relevant data"""
         start = time.time()
         client = await establish_connection(BleakClient, ble_device, ble_device.address)
-        _LOGGER.info(f"=== establish_connection{time.time()-start}")  # noqa: G004
+        _LOGGER.warn(f"=== establish_connection{time.time()-start}")  # noqa: G004
         device = RenphoDevice()
         device.name = ble_device.name
         device.address = ble_device.address
 
         device = await self._get_renpho_data(client, device)
         await client.disconnect()
-        _LOGGER.info(f"=== update_device disconnect: {time.time()-start}")  # noqa: G004
-
+        _LOGGER.warn(f"=== update_device disconnect: {time.time()-start}")  # noqa: G004
         return device
+
+    def poll_needed(
+        self, service_info: BluetoothServiceInfo, last_poll: float | None
+    ) -> bool:
+        if last_poll is None:
+            return True
+        return True
+
+    async def async_poll(self, ble_device: BLEDevice) -> SensorUpdate:
+        _LOGGER.debug("Polling Oral-B device: %s", ble_device.address)
+        client = await establish_connection(
+            BleakClientWithServiceCache, ble_device, ble_device.address
+        )
+        try:
+            # await self._get_payload(client)
+            _LOGGER.warning(f"======= get payload....")
+        except BleakError as err:
+            _LOGGER.warning(f"Reading gatt characters failed with err: {err}")
+        finally:
+            await client.disconnect()
+            _LOGGER.debug("Disconnected from active bluetooth client")
+        return self._finish_update()
