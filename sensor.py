@@ -121,7 +121,7 @@ async def async_setup_entry(
 
 
 class QingBluetoothSensorEntity(
-    PassiveBluetoothProcessorEntity[XiaomiPassiveBluetoothDataProcessor],
+    PassiveBluetoothProcessorEntity[QingPassiveBluetoothDataProcessor],
     SensorEntity,
 ):
     """Representation of a xiaomi ble sensor."""
