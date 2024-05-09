@@ -48,7 +48,7 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
             _LOGGER.warning("=== address:%s, %s, %s", address,discovery_info.name,discovery_info.advertisement.local_name)
             if address in current_addresses or address in self._discovered_devices:
                 continue
-            if "100" in discovery_info.name:
+            if "001" in discovery_info.name:
                 self._discovered_devices[address] = discovery_info.name
                 _LOGGER.warning("Found My Device")
                 _LOGGER.warning("=== Discovery address: %s", address)
