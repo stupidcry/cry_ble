@@ -61,7 +61,7 @@ def sensor_update_to_bluetooth_data_update(parsed_data):
     # This function must convert the parsed_data
     # from your library's update_method to a `PassiveBluetoothDataUpdate`
     # See the structure above
-    _LOGGER.w("===*** sensor_update_to_bluetooth_data_update")
+    _LOGGER.waring("===*** sensor_update_to_bluetooth_data_update")
     return PassiveBluetoothDataUpdate(
         devices={},
         entity_descriptions={},
