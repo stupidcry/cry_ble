@@ -1,91 +1,51 @@
-"""The OralB integration."""
+"""The Xiaomi Bluetooth integration."""
 
 from __future__ import annotations
 
 import logging
+from typing import cast
 
-from bleak_retry_connector import close_stale_connections_by_address
+from xiaomi_ble import EncryptionScheme, SensorUpdate, XiaomiBluetoothDeviceData
 
-from homeassistant.components import bluetooth
+from homeassistant import config_entries
 from homeassistant.components.bluetooth import (
+    DOMAIN as BLUETOOTH_DOMAIN,
     BluetoothScanningMode,
     BluetoothServiceInfoBleak,
     async_ble_device_from_address,
 )
-from homeassistant.components.bluetooth.active_update_processor import (
-    ActiveBluetoothProcessorCoordinator,
-)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import CoreState, HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers.device_registry import (
+    CONNECTION_BLUETOOTH,
+    DeviceRegistry,
+    async_get,
+)
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 
-from .const import DOMAIN
-from .RenphoBluetoothDeviceData import RenphoBluetoothDeviceData
-from sensor_state_data import SensorUpdate
+from .const import (
+    CONF_DISCOVERED_EVENT_CLASSES,
+    CONF_SLEEPY_DEVICE,
+    DOMAIN,
+    XIAOMI_BLE_EVENT,
+    XiaomiBleEvent,
+)
+# from .coordinator import XiaomiActiveBluetoothProcessorCoordinator
 
-PLATFORMS: list[Platform] = [Platform.SENSOR]
+PLATFORMS: list[Platform] = [Platform.BINARY_SENSOR, Platform.EVENT, Platform.SENSOR]
 
 _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Renpho BLE device from a config entry."""
-    _LOGGER.warning("===1 async_setup_entry")
-    hass.data.setdefault(DOMAIN, {})
-    address = entry.unique_id
-    await close_stale_connections_by_address(address)
-    assert address is not None
-
-    data = RenphoBluetoothDeviceData()
-
-    def _needs_poll(
-        service_info: BluetoothServiceInfoBleak, last_poll: float | None
-    ) -> bool:
-        return (
-            hass.state is CoreState.running
-            and data.poll_needed(service_info, last_poll)
-            and bool(
-                async_ble_device_from_address(
-                    hass, service_info.device.address, connectable=True
-                )
-            )
-        )
-
-    async def _async_poll(service_info: BluetoothServiceInfoBleak) -> SensorUpdate:
-        if service_info.connectable:
-            connectable_device = service_info.device
-        elif device := async_ble_device_from_address(
-            hass, service_info.device.address, True
-        ):
-            connectable_device = device
-        else:
-            raise RuntimeError(
-                f"No connectable device found for {service_info.device.address}"
-            )
-        return await data.async_poll(connectable_device)
-
-    coordinator = ActiveBluetoothProcessorCoordinator(
-        hass,
-        _LOGGER,
-        address=address,
-        mode=BluetoothScanningMode.PASSIVE,
-        update_method=data.update,
-        needs_poll_method=_needs_poll,
-        poll_method=_async_poll,
-        connectable=False,
-    )
-    hass.data[DOMAIN][entry.entry_id] = coordinator
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    entry.async_on_unload(
-        coordinator.async_start()
-    )
+    _LOGGER.warning("*** async_setup_entry")
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    _LOGGER.warning(f"=== async_unload_entry:{entry}")
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         hass.data[DOMAIN].pop(entry.entry_id)
+
     return unload_ok
