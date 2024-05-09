@@ -4,7 +4,15 @@ from __future__ import annotations
 
 import logging
 
-from xiaomi_ble import DeviceClass, SensorUpdate, Units
+from sensor_state_data import (
+    DeviceClass,
+    DeviceKey,
+    SensorDescription,
+    SensorDeviceInfo,
+    SensorUpdate,
+    SensorValue,
+    Units,
+)
 
 from homeassistant import config_entries
 from homeassistant.components.bluetooth.passive_update_processor import (
@@ -71,8 +79,6 @@ def sensor_update_to_bluetooth_data_update(
 ) -> PassiveBluetoothDataUpdate:
     """Convert a sensor update to a bluetooth data update."""
     _LOGGER.warning("*** sensor_update_to_bluetooth_data_update:%s", sensor_update)
-    for device_key, sensor_values in sensor_update.entity_values.items():
-        _LOGGER.warning("%s:%s", device_key, sensor_values)
 
     return PassiveBluetoothDataUpdate(
         devices={
