@@ -36,7 +36,7 @@ class RenphoBluetoothDeviceData(BluetoothData):
 
     ####   什么时候调用==》由update(self, data: BluetoothServiceInfo)调用
     def _start_update(self, service_info: BluetoothServiceInfo) -> None:
-        _LOGGER.debug("===***  _start_update Parsing BLE advertisement data: %s", service_info)
+        _LOGGER.warning("===***  _start_update Parsing BLE advertisement data: %s", service_info)
 
     @retry_bluetooth_connection_error()
     async def _get_payload(self, client: BleakClientWithServiceCache) -> None:
@@ -59,5 +59,5 @@ class RenphoBluetoothDeviceData(BluetoothData):
             _LOGGER.warning(f"Reading gatt characters failed with err: {err}")
         finally:
             await client.disconnect()
-            _LOGGER.debug("Disconnected from active bluetooth client")
+            _LOGGER.warning("Disconnected from active bluetooth client")
         return self._finish_update()
