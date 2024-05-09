@@ -35,27 +35,27 @@ class RenphoBluetoothDeviceData(BluetoothData):
         super().__init__()
 
     def _start_update(self, service_info: BluetoothServiceInfo) -> None:
-        _LOGGER.waring("===*** _start_update")
+        _LOGGER.warning("===*** _start_update")
 
     def poll_needed(
         self, service_info: BluetoothServiceInfo, last_poll: float | None
     ) -> bool:
-        _LOGGER.waring("=== poll_needed")
+        _LOGGER.warning("=== poll_needed")
         return True
 
     @retry_bluetooth_connection_error()
     async def _get_payload(self, client: BleakClientWithServiceCache) -> None:
-        _LOGGER.waring("=== _get_payload")
+        _LOGGER.warning("=== _get_payload")
 
     async def async_poll(self, ble_device: BLEDevice) -> SensorUpdate:
-        _LOGGER.waring("=== Polling device: %s", ble_device.address)
+        _LOGGER.warning("=== Polling device: %s", ble_device.address)
         client = await establish_connection(
             BleakClientWithServiceCache, ble_device, ble_device.address
         )
         try:
             await self._get_payload(client)
         except BleakError as err:
-            _LOGGER.waring(f"Reading gatt characters failed with err: {err}")
+            _LOGGER.warning(f"Reading gatt characters failed with err: {err}")
         finally:
             await client.disconnect()
             _LOGGER.debug("Disconnected from active bluetooth client")
