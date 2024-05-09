@@ -32,7 +32,7 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the user step to pick discovered device."""
-        _LOGGER.warning("=== async_step_user")
+        _LOGGER.warning("===1 async_step_user")
         if user_input is not None:
             _LOGGER.warning("=== user input:%s", user_input)
             address = user_input[CONF_ADDRESS]

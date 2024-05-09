@@ -34,19 +34,19 @@ class RenphoBluetoothDeviceData(BluetoothData):
     def __init__(self) -> None:
         super().__init__()
 
+    ####   什么时候调用==》由update(self, data: BluetoothServiceInfo)调用
     def _start_update(self, service_info: BluetoothServiceInfo) -> None:
-        _LOGGER.warning("===*** _start_update")
+        _LOGGER.debug("===***  _start_update Parsing BLE advertisement data: %s", service_info)
+
+    @retry_bluetooth_connection_error()
+    async def _get_payload(self, client: BleakClientWithServiceCache) -> None:
+        _LOGGER.warning("=== _get_payload")
 
     def poll_needed(
         self, service_info: BluetoothServiceInfo, last_poll: float | None
     ) -> bool:
         _LOGGER.warning("=== poll_needed")
         return True
-
-    @retry_bluetooth_connection_error()
-    async def _get_payload(self, client: BleakClientWithServiceCache) -> None:
-        _LOGGER.warning("=== _get_payload")
-
     async def async_poll(self, ble_device: BLEDevice) -> SensorUpdate:
         _LOGGER.warning("=== Polling device: %s", ble_device.address)
         client = await establish_connection(

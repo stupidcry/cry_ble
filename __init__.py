@@ -31,11 +31,12 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Renpho BLE device from a config entry."""
+    _LOGGER.warning("===1 async_setup_entry")
     hass.data.setdefault(DOMAIN, {})
     address = entry.unique_id
     assert address is not None
 
-    data = RenphoBluetoothDeviceData()  # sensor data?
+    data = RenphoBluetoothDeviceData()
 
     def _needs_poll(
         service_info: BluetoothServiceInfoBleak, last_poll: float | None
@@ -51,7 +52,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
 
     async def _async_poll(service_info: BluetoothServiceInfoBleak) -> SensorUpdate:
-        _LOGGER.warning(f"=== _async_poll:{service_info.connectable}")
         if service_info.connectable:
             connectable_device = service_info.device
         elif device := async_ble_device_from_address(
@@ -62,7 +62,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             raise RuntimeError(
                 f"No connectable device found for {service_info.device.address}"
             )
-        _LOGGER.warning(f"=== _async_poll:{connectable_device}")
         return await data.async_poll(connectable_device)
 
     coordinator = ActiveBluetoothProcessorCoordinator(
@@ -73,16 +72,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         update_method=data.update,
         needs_poll_method=_needs_poll,
         poll_method=_async_poll,
-        # We will take advertisements from non-connectable devices
-        # since we will trade the BLEDevice for a connectable one
-        # if we need to poll it
         connectable=False,
     )
     hass.data[DOMAIN][entry.entry_id] = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(
         coordinator.async_start()
-    )  # only start after all platforms have had a chance to subscribe
+    )
     return True
 
 
