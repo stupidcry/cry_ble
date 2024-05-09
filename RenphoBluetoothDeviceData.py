@@ -48,13 +48,14 @@ class RenphoBluetoothDeviceData(BluetoothData):
         return True
     async def async_poll(self, ble_device: BLEDevice) -> SensorUpdate:
         _LOGGER.warning("=== Polling device: %s", ble_device.address)
-        client = await establish_connection(BleakClient, ble_device, ble_device.address)
+        # test skip connection
+        #client = await establish_connection(BleakClient, ble_device, ble_device.address)
         # client = await establish_connection(
         #     BleakClientWithServiceCache, ble_device, ble_device.address
         # )
         _LOGGER.warning("=== Establish Connection Complete: %s", ble_device.address)
         try:
-            await self._get_payload(client)
+            await self._get_payload(None)
         except BleakError as err:
             _LOGGER.warning(f"Reading gatt characters failed with err: {err}")
         finally:
