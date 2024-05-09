@@ -38,7 +38,7 @@ from .QingActiveBluetoothProcessorCoordinator import (
 # from .coordinator import XiaomiActiveBluetoothProcessorCoordinator
 from .QingBluetoothDeviceData import QingBluetoothDeviceData
 
-PLATFORMS: list[Platform] = [Platform.BINARY_SENSOR, Platform.EVENT, Platform.SENSOR]
+PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -83,6 +83,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 f"No connectable device found for {service_info.device.address}"
             )
         return await data.async_poll(connectable_device)
+
+    async def _update() -> SensorUpdate:
+        _LOGGER.warning("*** _update")
+        return data.update
 
     coordinator = hass.data.setdefault(DOMAIN, {})[entry.entry_id] = (
         QingActiveBluetoothProcessorCoordinator(
