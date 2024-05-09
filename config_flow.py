@@ -112,7 +112,7 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
 
         current_addresses = self._async_current_ids()
         for discovery_info in async_discovered_service_info(self.hass, False):
-            _LOGGER.warning("*** discovery_info:%s", discovery_info)
+            _LOGGER.warning("*** discovery_info:%s", discovery_info.name)
             address = discovery_info.address
             if address in current_addresses or address in self._discovered_devices:
                 continue
@@ -123,6 +123,17 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
                     title=_title(discovery_info, device),
                     discovery_info=discovery_info,
                     device=device,
+                )
+                _LOGGER.warning("Found My Device")
+                _LOGGER.warning("=== Discovery address: %s", address)
+                _LOGGER.warning("=== Man Data: %s", discovery_info.manufacturer_data)
+                _LOGGER.warning("=== advertisement: %s", discovery_info.advertisement)
+                _LOGGER.warning("=== device: %s", discovery_info.device)
+                _LOGGER.warning("=== service data: %s", discovery_info.service_data)
+                _LOGGER.warning("=== service uuids: %s", discovery_info.service_uuids)
+                _LOGGER.warning("=== rssi: %s", discovery_info.rssi)
+                _LOGGER.warning(
+                    "=== advertisement: %s", discovery_info.advertisement.local_name
                 )
 
         if not self._discovered_devices:
@@ -147,6 +158,7 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
             assert entry is not None
             return self.async_update_reload_and_abort(entry, data=data)
 
+        _LOGGER.warning("*** goto async_create_entry: %s", data)
         return self.async_create_entry(
             title=self.context["title_placeholders"]["name"],
             data=data,
