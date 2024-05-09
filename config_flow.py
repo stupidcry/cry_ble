@@ -45,7 +45,7 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
         current_addresses = self._async_current_ids()
         for discovery_info in async_discovered_service_info(self.hass, False):
             address = discovery_info.address
-            _LOGGER.warning("=== address:%s, %s", address,discovery_info.service_uuids)
+            _LOGGER.warning("=== address:%s, %s, %s", address,discovery_info.name,discovery_info.advertisement.local_name)
             if address in current_addresses or address in self._discovered_devices:
                 continue
             if "AirPods" in discovery_info.name:
