@@ -12,8 +12,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 import logging
 import time
-
-from bleak import BleakError, BLEDevice
+from bleak import BleakClient,BleakError, BLEDevice
 from bleak_retry_connector import (
     BleakClientWithServiceCache,
     establish_connection,
