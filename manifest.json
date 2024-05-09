@@ -1,6 +1,6 @@
 {
-  "domain": "renpho_ble",
-  "name": "1-Renpho BLE",
+  "domain": "renpho_domain",
+  "name": "1-Renpho",
   "version": "1.0.0",
   "bluetooth": [
     {
