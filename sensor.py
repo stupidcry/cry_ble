@@ -81,10 +81,10 @@ def sensor_update_to_bluetooth_data_update(
     _LOGGER.warning("*** sensor_update_to_bluetooth_data_update:%s", sensor_update)
 
     return PassiveBluetoothDataUpdate(
-        devices={
-            device_id: sensor_device_info_to_hass_device_info(device_info)
-            for device_id, device_info in sensor_update.devices.items()
-        },
+        # devices={
+        #     device_id: sensor_device_info_to_hass_device_info(device_info)
+        #     for device_id, device_info in sensor_update.devices.items()
+        # },
         entity_descriptions={
             device_key_to_bluetooth_entity_key(device_key): SENSOR_DESCRIPTIONS[
                 (description.device_class, description.native_unit_of_measurement)
