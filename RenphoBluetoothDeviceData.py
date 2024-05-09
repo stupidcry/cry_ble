@@ -51,7 +51,7 @@ class RenphoBluetoothDeviceData(BluetoothData):
         # test skip connection
         # client = await establish_connection(BleakClient, ble_device, ble_device.address)
         client = await establish_connection(
-            BleakClientWithServiceCache, ble_device, ble_device.address
+            BleakClient, ble_device, ble_device.address
         )
         _LOGGER.warning("=== Establish Connection Complete: %s", ble_device.address)
         try:
