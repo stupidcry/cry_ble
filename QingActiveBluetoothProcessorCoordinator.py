@@ -68,7 +68,7 @@ class QingActiveBluetoothProcessorCoordinator(ActiveBluetoothProcessorCoordinato
         return self.entry.data.get(CONF_SLEEPY_DEVICE, self.device_data.sleepy_device)
 
 
-# class XiaomiPassiveBluetoothDataProcessor(PassiveBluetoothDataProcessor):
-#     """Define a Xiaomi Bluetooth Passive Update Data Processor."""
+class QingPassiveBluetoothDataProcessor(PassiveBluetoothDataProcessor):
+    """Define a Xiaomi Bluetooth Passive Update Data Processor."""
 
-#     coordinator: XiaomiActiveBluetoothProcessorCoordinator
+    coordinator: QingActiveBluetoothProcessorCoordinator
