@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import cast
 
+from home_assistant_bluetooth import BluetoothServiceInfo
 from xiaomi_ble import EncryptionScheme, SensorUpdate, XiaomiBluetoothDeviceData
 
 from homeassistant import config_entries
@@ -84,9 +85,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             )
         return await data.async_poll(connectable_device)
 
-    async def _update() -> SensorUpdate:
-        _LOGGER.warning("*** _update")
-        return data.update
+    async def _update(data: BluetoothServiceInfo) -> SensorUpdate:
+        _LOGGER.warning("*** _update:%s", data)
+        return data.update(data)
 
     coordinator = hass.data.setdefault(DOMAIN, {})[entry.entry_id] = (
         QingActiveBluetoothProcessorCoordinator(
