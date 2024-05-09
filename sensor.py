@@ -42,7 +42,7 @@ from homeassistant.helpers.update_coordinator import (
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from .const import DOMAIN
-from .RenphoBluetoothDeviceData import RenphoDevice
+from .RenphoBluetoothDeviceData import RenphoBluetoothDeviceData
 
 _LOGGER = logging.getLogger(__name__)
 
