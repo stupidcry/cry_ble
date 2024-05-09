@@ -35,7 +35,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.sensor import sensor_device_info_to_hass_device_info
 
 from .const import DOMAIN
-from .coordinator import XiaomiPassiveBluetoothDataProcessor
 from .device import device_key_to_bluetooth_entity_key
 from .QingActiveBluetoothProcessorCoordinator import (
     QingActiveBluetoothProcessorCoordinator,
