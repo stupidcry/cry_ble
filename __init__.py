@@ -104,7 +104,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             entry=entry,
         )
     )
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    # await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(
         coordinator.async_start()
     )  # only start after all platforms have had a chance to subscribe
