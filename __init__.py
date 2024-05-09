@@ -32,6 +32,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Renpho BLE device from a config entry."""
     _LOGGER.warning("===1 async_setup_entry")
+    await close_stale_connections_by_address(address)
     hass.data.setdefault(DOMAIN, {})
     address = entry.unique_id
     assert address is not None
