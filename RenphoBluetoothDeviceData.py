@@ -52,6 +52,7 @@ class RenphoBluetoothDeviceData(BluetoothData):
         client = await establish_connection(
             BleakClientWithServiceCache, ble_device, ble_device.address
         )
+        _LOGGER.warning("=== Establish Connection Complete: %s", ble_device.address)
         try:
             await self._get_payload(client)
         except BleakError as err:

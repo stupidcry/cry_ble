@@ -50,15 +50,15 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
                 continue
             if "T001" in discovery_info.name:
                 self._discovered_devices[address] = discovery_info.name
-                _LOGGER.debug("Found My Device")
-                _LOGGER.debug("=== Discovery address: %s", address)
-                _LOGGER.debug("=== Man Data: %s", discovery_info.manufacturer_data)
-                _LOGGER.debug("=== advertisement: %s", discovery_info.advertisement)
-                _LOGGER.debug("=== device: %s", discovery_info.device)
-                _LOGGER.debug("=== service data: %s", discovery_info.service_data)
-                _LOGGER.debug("=== service uuids: %s", discovery_info.service_uuids)
-                _LOGGER.debug("=== rssi: %s", discovery_info.rssi)
-                _LOGGER.debug(
+                _LOGGER.warning("Found My Device")
+                _LOGGER.warning("=== Discovery address: %s", address)
+                _LOGGER.warning("=== Man Data: %s", discovery_info.manufacturer_data)
+                _LOGGER.warning("=== advertisement: %s", discovery_info.advertisement)
+                _LOGGER.warning("=== device: %s", discovery_info.device)
+                _LOGGER.warning("=== service data: %s", discovery_info.service_data)
+                _LOGGER.warning("=== service uuids: %s", discovery_info.service_uuids)
+                _LOGGER.warning("=== rssi: %s", discovery_info.rssi)
+                _LOGGER.warning(
                     "=== advertisement: %s", discovery_info.advertisement.local_name
                 )
         if not self._discovered_devices:
