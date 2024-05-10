@@ -85,7 +85,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             )
         return await data.async_poll(connectable_device)
 
-    async def _update(service_info: BluetoothServiceInfo) -> SensorUpdate:
+    def _update(service_info: BluetoothServiceInfo) -> SensorUpdate:
         _LOGGER.warning("*** _update:%s", data)
         return SensorUpdate()
 
