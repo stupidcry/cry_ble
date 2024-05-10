@@ -47,7 +47,7 @@ class QingBluetoothDeviceData(BluetoothData):
         self.update_predefined_sensor(SensorLibrary.BATTERY__PERCENTAGE, 99)
         return self._finish_update()
 
-    def update(self, data: BluetoothServiceInfo) -> SensorUpdate:
+    async def update(self, data: BluetoothServiceInfo) -> SensorUpdate:
         """Update a device."""
         # Ensure events from previous
         # updates are not carried over
