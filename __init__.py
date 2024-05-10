@@ -85,9 +85,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             )
         return await data.async_poll(connectable_device)
 
-    async def _update(data: BluetoothServiceInfo) -> SensorUpdate:
+    async def _update(service_info: BluetoothServiceInfo) -> SensorUpdate:
         _LOGGER.warning("*** _update:%s", data)
-        return await data.update(data)
+        return SensorUpdate()
 
     coordinator = hass.data.setdefault(DOMAIN, {})[entry.entry_id] = (
         QingActiveBluetoothProcessorCoordinator(
@@ -95,7 +95,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER,
             address=address,
             mode=BluetoothScanningMode.PASSIVE,
-            update_method=data.update,
+            update_method=_update,
             needs_poll_method=_needs_poll,
             device_data=data,
             discovered_event_classes=set(
