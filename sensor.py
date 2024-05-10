@@ -78,7 +78,7 @@ def sensor_update_to_bluetooth_data_update(
     sensor_update: SensorUpdate,
 ) -> PassiveBluetoothDataUpdate:
     """Convert a sensor update to a bluetooth data update."""
-    _LOGGER.warning("*** sensor_update_to_bluetooth_data_update:%s", sensor_update)
+    _LOGGER.warning("***+++ sensor_update_to_bluetooth_data_update:%s", sensor_update)
 
     return PassiveBluetoothDataUpdate(
         # devices={
