@@ -57,6 +57,7 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Handle the bluetooth discovery step."""
         _LOGGER.warning("*** async_step_bluetooth")
+        # 设置的是entry的uniq id,会被setup entry使用
         await self.async_set_unique_id(discovery_info.address)
         self._abort_if_unique_id_configured()
         device = DeviceData()
@@ -152,9 +153,13 @@ class RenphoConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         data: dict[str, Any] = {}
 
+        data["hello"] = "world"
+
         if entry_id := self.context.get("entry_id"):
+            _LOGGER.warning("*** _async_get_or_create_entry: %s", entry_id)
             entry = self.hass.config_entries.async_get_entry(entry_id)
             assert entry is not None
+            _LOGGER.warning("*** goto async_update_reload_and_abort: %s", entry)
             return self.async_update_reload_and_abort(entry, data=data)
 
         _LOGGER.warning("*** goto async_create_entry: %s", data)

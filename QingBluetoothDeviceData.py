@@ -43,5 +43,6 @@ class QingBluetoothDeviceData(BluetoothData):
 
         #     self.set_device_sw_version(payload[2:].decode("utf-8"))
         #     self.update_predefined_sensor(SensorLibrary.BATTERY__PERCENTAGE, payload[0])
-
+        self.set_device_sw_version("123456")
+        self.update_predefined_sensor(SensorLibrary.BATTERY__PERCENTAGE, 99)
         return self._finish_update()
