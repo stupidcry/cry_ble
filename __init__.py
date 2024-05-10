@@ -95,7 +95,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER,
             address=address,
             mode=BluetoothScanningMode.PASSIVE,
-            update_method=_update,
+            update_method=data.update,
             needs_poll_method=_needs_poll,
             device_data=data,
             discovered_event_classes=set(
