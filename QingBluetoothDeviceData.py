@@ -32,22 +32,21 @@ class QingBluetoothDeviceData(BluetoothData):
         Poll the device to retrieve any values we can't get from passive listening.
         """
         _LOGGER.warning("*** async_poll")
-        # if self.device_id == 0x0098:
-        #     client = await establish_connection(
-        #         BleakClient, ble_device, ble_device.address
-        #     )
-        #     try:
-        #         battery_char = client.services.get_characteristic(
-        #             CHARACTERISTIC_BATTERY
-        #         )
-        #         payload = await client.read_gatt_char(battery_char)
-        #     finally:
-        #         await client.disconnect()
+        client = await establish_connection(BleakClient, ble_device, ble_device.address)
+        try:
+            # battery_char = client.services.get_characteristic("")
+            for service in client.services:
+                for characteristic in service.characteristics:
+                    _LOGGER.warning(
+                        "Service %s, Characteristic %s", service, characteristic
+                    )
+            # payload = await client.read_gatt_char(battery_char)
+        finally:
+            await client.disconnect()
 
-        #     self.set_device_sw_version(payload[2:].decode("utf-8"))
-        #     self.update_predefined_sensor(SensorLibrary.BATTERY__PERCENTAGE, payload[0])
-        self.set_device_sw_version("123456")
-        self.update_predefined_sensor(SensorLibrary.BATTERY__PERCENTAGE, 99)
+        self.set_device_sw_version("abcd".decode("utf-8"))
+        # self.update_predefined_sensor(SensorLibrary.BATTERY__PERCENTAGE, payload[0])
+        self.update_predefined_sensor(SensorLibrary.BATTERY__PERCENTAGE, 77)
         return self._finish_update()
 
     def _start_update(self, service_info: BluetoothServiceInfo) -> None:
@@ -62,8 +61,6 @@ class QingBluetoothDeviceData(BluetoothData):
         self.set_device_name(f"Cry Device Name {identifier}")
         self.set_device_type("CRY device type")
         self.set_device_manufacturer("CRY anufacturer")
-        self.pending = False
-        self.sleepy_device = False
         self.update_predefined_sensor(SensorLibrary.TEMPERATURE__CELSIUS, 12)
         return True
 
