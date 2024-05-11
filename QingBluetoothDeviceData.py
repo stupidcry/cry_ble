@@ -24,8 +24,8 @@ class QingBluetoothDeviceData(BluetoothData):
     def poll_needed(
         self, service_info: BluetoothServiceInfo, last_poll: float | None
     ) -> bool:
-        _LOGGER.warning("*** poll_needed")
-        return True
+        _LOGGER.warning("*** poll_needed %s", last_poll)
+        return not last_poll or last_poll > 30
 
     async def async_poll(self, ble_device: BLEDevice) -> SensorUpdate:
         """
