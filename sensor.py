@@ -92,7 +92,7 @@ def sensor_update_to_bluetooth_data_update(
     _LOGGER.warning("***+++ sensor_update_to_bluetooth_data_update:%s", sensor_update)
     for device_id, device_info in sensor_update.devices.items():
         _LOGGER.warning(
-            "device_id %s:%s", sensor_device_info_to_hass_device_info(device_info)
+            "*** device_id %s:%s", sensor_device_info_to_hass_device_info(device_info)
         )
 
     return PassiveBluetoothDataUpdate(
