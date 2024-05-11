@@ -1,15 +1,17 @@
+import logging
+
+from bleak import BleakClient
+from bleak.backends.device import BLEDevice
+from bleak_retry_connector import establish_connection
+from bluetooth_data_tools import short_address
 from bluetooth_sensor_state_data import BluetoothData
 from home_assistant_bluetooth import BluetoothServiceInfo
-from bleak.backends.device import BLEDevice
 from sensor_state_data import (
     BinarySensorDeviceClass,
     SensorLibrary,
     SensorUpdate,
     Units,
 )
-from bleak_retry_connector import establish_connection
-from bleak import BleakClient
-import logging
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -54,10 +56,10 @@ class QingBluetoothDeviceData(BluetoothData):
         )
         for uuid, data in service_info.service_data.items():
             _LOGGER.warning("%s:%s", uuid, data)
-
+        identifier = short_address(service_info.address)
         self.device_id = "cry_device_id"
-        self.set_title(f"Cry Title")
-        self.set_device_name(f"Cry Device Name")
+        self.set_title(f"Cry Title {identifier}")
+        self.set_device_name(f"Cry Device Name {identifier}")
         self.set_device_type("CRY device type")
         self.set_device_manufacturer("CRY anufacturer")
         self.pending = False

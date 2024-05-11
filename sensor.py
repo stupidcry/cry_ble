@@ -97,6 +97,7 @@ def sensor_update_to_bluetooth_data_update(
             sensor_device_info_to_hass_device_info(device_info),
         )
 
+    # PassiveBluetoothEntityKey(key='temperature', device_id=None):Temperature
     for device_key, sensor_values in sensor_update.entity_values.items():
         _LOGGER.warning(
             "*** entity_names %s:%s",
