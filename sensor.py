@@ -97,6 +97,13 @@ def sensor_update_to_bluetooth_data_update(
             sensor_device_info_to_hass_device_info(device_info),
         )
 
+    for device_key, sensor_values in sensor_update.entity_values.items():
+        _LOGGER.warning(
+            "*** entity_names %s:%s",
+            device_key_to_bluetooth_entity_key(device_key),
+            sensor_values.name,
+        )
+
     return PassiveBluetoothDataUpdate(
         # (title=None, anufacturer=None, sw_version='123456', hw_version=None)},
         # devices={None: SensorDeviceInfo(name=None, model=None, manufacturer=None, sw_version='123456', hw_version=None)}
