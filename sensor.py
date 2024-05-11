@@ -81,6 +81,29 @@ def sensor_update_to_bluetooth_data_update(
     _LOGGER.warning("***+++ sensor_update_to_bluetooth_data_update:%s", sensor_update)
 
     return PassiveBluetoothDataUpdate(
+        # (title=None, anufacturer=None, sw_version='123456', hw_version=None)},
+        # devices={None: SensorDeviceInfo(name=None, model=None, manufacturer=None, sw_version='123456', hw_version=None)}
+        devices={
+            device_id: sensor_device_info_to_hass_device_info(device_info)
+            for device_id, device_info in sensor_update.devices.items()
+        },
+        # entity_descriptions={DeviceKey(key='battery', device_id=None): SensorDescription(device_key=DeviceKey(key='battery', device_id=None), device_class=<SensorDeviceClass.BATTERY: 'battery'>, native_unit_of_measurement=<Units.PERCENTAGE: '%'>)},
+        entity_descriptions={
+            device_key_to_bluetooth_entity_key(device_key): SENSOR_DESCRIPTIONS[
+                (description.device_class, description.native_unit_of_measurement)
+            ]
+            for device_key, description in sensor_update.entity_descriptions.items()
+            if description.device_class
+        },
+        entity_data={
+            device_key_to_bluetooth_entity_key(device_key): sensor_values.native_value
+            for device_key, sensor_values in sensor_update.entity_values.items()
+        },
+        # entity_values={DeviceKey(key='battery', device_id=None): SensorValue(device_key=DeviceKey(key='battery', device_id=None), name='Battery', native_value=99)}
+        entity_names={
+            device_key_to_bluetooth_entity_key(device_key): sensor_values.name
+            for device_key, sensor_values in sensor_update.entity_values.items()
+        },
         # devices={
         #     device_id: sensor_device_info_to_hass_device_info(device_info)
         #     for device_id, device_info in sensor_update.devices.items()

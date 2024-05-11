@@ -47,6 +47,13 @@ class QingBluetoothDeviceData(BluetoothData):
         self.update_predefined_sensor(SensorLibrary.BATTERY__PERCENTAGE, 99)
         return self._finish_update()
 
+    def _start_update(self, service_info: BluetoothServiceInfo) -> None:
+        _LOGGER.warning(
+            "*** _start_update Parsing Qing BLE advertisement data: %s", service_info
+        )
+        for uuid, data in service_info.service_data.items():
+            _LOGGER.warning("%s:%s", uuid, data)
+
     def update(self, data: BluetoothServiceInfo) -> SensorUpdate:
         """Update a device."""
         # Ensure events from previous
