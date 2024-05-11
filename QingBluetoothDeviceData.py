@@ -17,6 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 class QingBluetoothDeviceData(BluetoothData):
     def __init__(self, bindkey: bytes | None = None) -> None:
         super().__init__()
+        self.device_id = "default_device_id"
 
     def poll_needed(
         self, service_info: BluetoothServiceInfo, last_poll: float | None
