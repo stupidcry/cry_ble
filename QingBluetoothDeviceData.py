@@ -54,6 +54,16 @@ class QingBluetoothDeviceData(BluetoothData):
         for uuid, data in service_info.service_data.items():
             _LOGGER.warning("%s:%s", uuid, data)
 
+        self.device_id = "cry_device_id"
+        self.set_title(f"Cry Title")
+        self.set_device_name(f"Cry Device Name")
+        self.set_device_type("CRY device type")
+        self.set_device_manufacturer("CRY anufacturer")
+        self.pending = False
+        self.sleepy_device = False
+        self.update_predefined_sensor(SensorLibrary.TEMPERATURE__CELSIUS, 12)
+        return True
+
     def update(self, data: BluetoothServiceInfo) -> SensorUpdate:
         """Update a device."""
         # Ensure events from previous
