@@ -42,6 +42,7 @@ class QingBluetoothDeviceData(BluetoothData):
                     )
             # payload = await client.read_gatt_char(battery_char)
         finally:
+            _LOGGER.warning("*** async_poll, disconnect")
             await client.disconnect()
 
         self.set_device_sw_version("abcd".decode("utf-8"))
